@@ -22,3 +22,14 @@ CREATE POLICY "Users can manage their own anime" ON user_anime
 
 CREATE INDEX idx_user_anime_user_id ON user_anime(user_id);
 CREATE INDEX idx_user_anime_status ON user_anime(user_id, status);
+
+CREATE OR REPLACE FUNCTION delete_user()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  DELETE FROM auth.users WHERE id = auth.uid();
+END;
+$$;
