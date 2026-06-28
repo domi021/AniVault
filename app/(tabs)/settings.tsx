@@ -25,17 +25,6 @@ const PRESET_COLORS = [
   '#ec4899',
 ];
 
-const AVATAR_COLORS = [
-  '#10b981',
-  '#3b82f6',
-  '#8b5cf6',
-  '#f59e0b',
-  '#ef4444',
-  '#ec4899',
-  '#06b6d4',
-  '#84cc16',
-];
-
 const LANGUAGES: { key: Language; label: string }[] = [
   { key: 'en', label: 'English' },
   { key: 'es', label: 'Español' },
@@ -50,7 +39,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { mode, primaryColor, setMode, setPrimaryColor } = useThemeStore();
   const { language, setLanguage } = useLanguageStore();
-  const { session, signOut, avatarColor, setAvatarColor } = useAuthStore();
+  const { session, signOut } = useAuthStore();
   const importAnimes = useAnimeStore((s) => s.importFromMAL);
   const sortOrder = useAnimeStore((s) => s.sortOrder);
   const setSortOrder = useAnimeStore((s) => s.setSortOrder);
@@ -136,13 +125,7 @@ export default function SettingsScreen() {
         ]}
       >
         <View style={styles.accountLeft}>
-          <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
-            <Text style={styles.avatarText}>
-              {session
-                ? (session.user.user_metadata?.username || session.user.email || '?')[0].toUpperCase()
-                : 'G'}
-            </Text>
-          </View>
+          <Text style={[styles.accountLogo, { color: colors.tint }]}>{'\u039B'}</Text>
           <View>
             <Text style={[styles.accountLabel, { color: colors.secondaryText }]}>
               {t.auth.account}
@@ -162,33 +145,6 @@ export default function SettingsScreen() {
         >
           <Text style={[styles.accountLogoutText, { color: '#ef4444' }]}>{t.auth.logout}</Text>
         </Pressable>
-      </View>
-
-      <Text style={[styles.heading, { color: colors.text, marginTop: 24 }]}>
-        Profile Picture
-      </Text>
-
-      <View style={styles.presets}>
-        {AVATAR_COLORS.map((c) => (
-          <Pressable
-            key={c}
-            onPress={() => setAvatarColor(c)}
-            style={[
-              styles.avatarSwatch,
-              { backgroundColor: c },
-              avatarColor === c && {
-                borderWidth: 3,
-                borderColor: colors.text,
-              },
-            ]}
-          >
-            <Text style={styles.avatarSwatchText}>
-              {session
-                ? (session.user.user_metadata?.username || session.user.email || '?')[0].toUpperCase()
-                : 'G'}
-            </Text>
-          </Pressable>
-        ))}
       </View>
 
       {session && (
@@ -449,22 +405,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 48 },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  avatarSwatch: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarSwatchText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
   accountCard: {
     flexDirection: 'row',
     alignItems: 'center',

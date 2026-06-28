@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useColors } from '@/src/hooks/useColors';
-import { checkForUpdate, downloadAndInstall, UpdateInfo } from '@/src/lib/update';
+import { checkForUpdate, UpdateInfo } from '@/src/lib/update';
 import Constants from 'expo-constants';
 
 export default function ForceUpdate() {
   const colors = useColors();
   const [update, setUpdate] = useState<UpdateInfo | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const current = Constants.expoConfig?.version || '1.0.0';
@@ -17,16 +15,9 @@ export default function ForceUpdate() {
     });
   }, []);
 
-  const handleDownload = async () => {
+  const handleUpdate = () => {
     if (!update) return;
-    setDownloading(true);
-    setError('');
-    try {
-      await downloadAndInstall(update.apkUrl);
-    } catch (e: any) {
-      setError(e.message || 'Download failed');
-      setDownloading(false);
-    }
+    Linking.openURL(update.apkUrl);
   };
 
   return (
@@ -35,18 +26,14 @@ export default function ForceUpdate() {
         <Text style={[styles.icon, { color: colors.tint }]}>{'\u039B'}</Text>
         <Text style={[styles.title, { color: colors.text }]}>Update Available</Text>
         <Text style={[styles.desc, { color: colors.secondaryText }]}>
-          {downloading ? 'Downloading APK...' : error || 'A new version is ready. Please download and install to continue using the app.'}
+          A new version is ready. Tap below to download it.
         </Text>
-        {!downloading && (
-          <Pressable
-            onPress={handleDownload}
-            style={[styles.btn, { backgroundColor: colors.tint }]}
-          >
-            <Text style={styles.btnText}>
-              {error ? 'Retry' : 'Download & Install'}
-            </Text>
-          </Pressable>
-        )}
+        <Pressable
+          onPress={handleUpdate}
+          style={[styles.btn, { backgroundColor: colors.tint }]}
+        >
+          <Text style={styles.btnText}>Download</Text>
+        </Pressable>
       </View>
     </Modal>
   );
