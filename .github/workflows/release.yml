@@ -1,0 +1,35 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Trigger EAS Build
+        id: eas
+        run: |
+          npx eas build --platform android --profile preview --non-interactive --wait --json > build.json
+          echo "id=$(jq -r '.id' build.json)" >> $GITHUB_OUTPUT
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download APK
+        run: npx eas build:download --platform android --id ${{ steps.eas.outputs.id }} --output app-release.apk --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app-release.apk
+          generate_release_notes: true
