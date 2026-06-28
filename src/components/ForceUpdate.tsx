@@ -8,6 +8,7 @@ export default function ForceUpdate() {
   const colors = useColors();
   const [update, setUpdate] = useState<UpdateInfo | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const current = Constants.expoConfig?.version || '1.0.0';
@@ -19,9 +20,11 @@ export default function ForceUpdate() {
   const handleDownload = async () => {
     if (!update) return;
     setDownloading(true);
+    setError('');
     try {
       await downloadAndInstall(update.apkUrl);
     } catch (e: any) {
+      setError(e.message || 'Download failed');
       setDownloading(false);
     }
   };
@@ -32,17 +35,18 @@ export default function ForceUpdate() {
         <Text style={[styles.icon, { color: colors.tint }]}>{'\u039B'}</Text>
         <Text style={[styles.title, { color: colors.text }]}>Update Available</Text>
         <Text style={[styles.desc, { color: colors.secondaryText }]}>
-          A new version is ready. Please download and install to continue using the app.
+          {downloading ? 'Downloading APK...' : error || 'A new version is ready. Please download and install to continue using the app.'}
         </Text>
-        <Pressable
-          onPress={handleDownload}
-          disabled={downloading}
-          style={[styles.btn, { backgroundColor: colors.tint }]}
-        >
-          <Text style={styles.btnText}>
-            {downloading ? 'Downloading...' : 'Download & Install'}
-          </Text>
-        </Pressable>
+        {!downloading && (
+          <Pressable
+            onPress={handleDownload}
+            style={[styles.btn, { backgroundColor: colors.tint }]}
+          >
+            <Text style={styles.btnText}>
+              {error ? 'Retry' : 'Download & Install'}
+            </Text>
+          </Pressable>
+        )}
       </View>
     </Modal>
   );
