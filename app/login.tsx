@@ -55,7 +55,9 @@ export default function LoginScreen() {
     } catch (e: any) {
       setError(e.message === 'Invalid login credentials'
         ? t.auth.loginError
-        : e.message || t.auth.signupError);
+        : e.message?.toLowerCase().includes('rate')
+          ? t.auth.rateLimitError
+          : e.message || t.auth.signupError);
     } finally {
       setLoading(false);
     }

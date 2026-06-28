@@ -72,6 +72,7 @@ export const en = {
     signupError: 'Failed to create account',
     passwordShort: 'Password must be at least 6 characters',
     checkEmail: 'Check your email for confirmation link',
+    rateLimitError: 'Too many attempts. Please try again later.',
     logout: 'Log Out',
     loggedInAs: 'Logged in as',
     guest: 'Guest',

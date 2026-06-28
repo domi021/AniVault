@@ -72,6 +72,7 @@ export const ja = {
     signupError: 'アカウント作成に失敗しました',
     passwordShort: 'パスワードは6文字以上必要です',
     checkEmail: '確認リンクのメールを確認してください',
+    rateLimitError: '試行回数が多すぎます。後でもう一度お試しください。',
     logout: 'ログアウト',
     loggedInAs: 'ログイン中',
     guest: 'ゲスト',

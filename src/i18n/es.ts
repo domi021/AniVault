@@ -72,6 +72,7 @@ export const es = {
     signupError: 'Error al crear cuenta',
     passwordShort: 'La contrasena debe tener al menos 6 caracteres',
     checkEmail: 'Revisa tu email para el enlace de confirmacion',
+    rateLimitError: 'Demasiados intentos. Inténtalo de nuevo más tarde.',
     logout: 'Cerrar Sesion',
     loggedInAs: 'Sesion iniciada como',
     guest: 'Invitado',
