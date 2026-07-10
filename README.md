@@ -14,7 +14,7 @@ Track your anime watchlist with ratings, favorites, and personalized recommendat
 - **Force Updates** — old versions are prompted to download the latest APK
 - **Themes** — light and dark mode with accent color picker
 - **Multi-language** — English, Spanish, Japanese
-
+-**Watch-Anime**-With the latest release you can watch anime ad free.
 ## Tech
 
 - [Expo](https://expo.dev) (React Native) — Android/iOS/Web
