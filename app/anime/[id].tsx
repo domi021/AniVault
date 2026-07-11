@@ -1,5 +1,5 @@
 import type { Translations } from '@/src/i18n';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useColors } from '@/src/hooks/useColors';
@@ -21,6 +21,7 @@ export default function AnimeDetailScreen() {
   const malId = parseInt(id, 10);
   const colors = useColors();
   const t = useTranslation();
+  const router = useRouter();
 
   const { data, isLoading } = useQuery({
     queryKey: ['anime', malId],
@@ -153,6 +154,27 @@ export default function AnimeDetailScreen() {
             {anime.synopsis}
           </Text>
         )}
+
+        <Pressable
+          style={[styles.watchBtn, { backgroundColor: colors.tint }]}
+          onPress={() => {
+            if (!userAnime && anime) {
+              addAnime({
+                mal_id: malId,
+                title: anime.title_english || anime.title,
+                image_url: anime.images.jpg.image_url,
+                status: 'watching',
+                episodes_watched: 0,
+                total_episodes: anime.episodes,
+                score: undefined,
+                added_at: Date.now(),
+              });
+            }
+            router.push(`/anime/${malId}/watch`);
+          }}
+        >
+          <Text style={styles.watchBtnText}>{t.detail.watch}</Text>
+        </Pressable>
 
         <View style={styles.divider} />
 
@@ -316,4 +338,11 @@ const styles = StyleSheet.create({
   },
   removeBtn: { paddingVertical: 12, alignItems: 'center' },
   removeBtnText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
+  watchBtn: {
+    marginTop: 16,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  watchBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

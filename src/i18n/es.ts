@@ -51,6 +51,7 @@ export const es = {
     rating: 'Calificacion',
     remove: 'Eliminar de Lista',
     animeNotFound: 'Anime no encontrado',
+    watch: 'Ver',
   },
   recommend: {
     title: 'Recomendados para Ti',

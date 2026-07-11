@@ -51,6 +51,7 @@ export const en = {
     rating: 'Rating',
     remove: 'Remove from List',
     animeNotFound: 'Anime not found',
+    watch: 'Watch',
   },
   recommend: {
     title: 'Recommended for You',

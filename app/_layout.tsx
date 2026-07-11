@@ -70,6 +70,8 @@ function RootLayoutNav() {
           <>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="anime/[id]" options={{ headerShown: true, title: 'Anime Details' }} />
+            <Stack.Screen name="anime/[id]/watch" options={{ headerShown: true, title: 'Episodes' }} />
+            <Stack.Screen name="anime/[id]/watch/[episodeId]" options={{ headerShown: true, title: 'Player' }} />
           </>
         )}
       </Stack>
