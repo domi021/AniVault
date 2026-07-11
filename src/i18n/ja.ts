@@ -51,6 +51,7 @@ export const ja = {
     rating: 'レーティング',
     remove: 'リストから削除',
     animeNotFound: 'アニメが見つかりません',
+    watch: '視聴',
   },
   recommend: {
     title: 'おすすめ',

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useColors } from '@/src/hooks/useColors';
 import { useTranslation } from '@/src/hooks/useTranslation';
 import { searchAnime } from '@/src/api/jikan';
@@ -10,12 +10,24 @@ import { EmptyState } from '@/src/components/EmptyState';
 export default function SearchScreen() {
   const colors = useColors();
   const t = useTranslation();
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['search', query],
-    queryFn: () => searchAnime(query),
-    enabled: query.length > 0,
+    queryKey: ['search', debouncedQuery],
+    queryFn: () => searchAnime(debouncedQuery),
+    enabled: debouncedQuery.length > 1,
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 30000,
   });
 
   return (
@@ -39,14 +51,22 @@ export default function SearchScreen() {
       )}
 
       {isError && (
-        <EmptyState icon="exclamationmark" title={t.search.error} subtitle={t.search.errorSub} />
+        <View style={styles.center}>
+          <EmptyState icon="exclamationmark" title={t.search.error} subtitle={t.search.errorSub} />
+          <Pressable
+            onPress={() => queryClient.invalidateQueries({ queryKey: ['search', debouncedQuery] })}
+            style={[styles.retryBtn, { backgroundColor: colors.tint }]}
+          >
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </Pressable>
+        </View>
       )}
 
-      {!isLoading && !isError && query.length > 0 && data?.data.length === 0 && (
-        <EmptyState icon="magnifyingglass" title={t.search.noResults} subtitle={`${t.search.noResultsSub} "${query}"`} />
+      {!isLoading && !isError && debouncedQuery.length > 1 && data?.data?.length === 0 && (
+        <EmptyState icon="magnifyingglass" title={t.search.noResults} subtitle={`${t.search.noResultsSub} "${debouncedQuery}"`} />
       )}
 
-      {query.length === 0 && (
+      {debouncedQuery.length <= 1 && !isLoading && (
         <EmptyState
           icon="magnifyingglass"
           title={t.search.emptyTitle}
@@ -54,7 +74,7 @@ export default function SearchScreen() {
         />
       )}
 
-      {data && data.data.length > 0 && (
+      {data && data.data && data.data.length > 0 && (
         <FlatList
           data={data.data.filter((item, index, self) => self.findIndex((i) => i.mal_id === item.mal_id) === index)}
           keyExtractor={(item) => String(item.mal_id)}
@@ -87,5 +107,20 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 32,
+  },
+  center: {
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  retryBtn: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

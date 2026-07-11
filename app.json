@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "anime-tracker",
-    "slug": "anime-tracker",
-    "version": "1.0.3",
+    "name": "anivault",
+    "slug": "anivault",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "animetracker",
+      "scheme": "anivault",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
@@ -26,7 +26,6 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -38,7 +37,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
