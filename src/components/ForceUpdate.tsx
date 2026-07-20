@@ -2,15 +2,13 @@ import { useState, useEffect } from 'react';
 import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useColors } from '@/src/hooks/useColors';
 import { checkForUpdate, getUpdateUrl, UpdateInfo } from '@/src/lib/update';
-import Constants from 'expo-constants';
 
 export default function ForceUpdate() {
   const colors = useColors();
   const [update, setUpdate] = useState<UpdateInfo | null>(null);
 
   useEffect(() => {
-    const current = Constants.expoConfig?.version || '1.0.0';
-    checkForUpdate(current).then((info) => {
+    checkForUpdate().then((info) => {
       if (info) setUpdate(info);
     });
   }, []);
