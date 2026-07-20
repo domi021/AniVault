@@ -1,5 +1,4 @@
-import Constants from 'expo-constants';
-import * as Application from 'expo-application';
+import { version as APP_VERSION } from '../../package.json';
 
 const UPDATE_URL = 'https://raw.githubusercontent.com/domi021/AniVault/main/version.json';
 
@@ -9,18 +8,15 @@ export interface UpdateInfo {
 }
 
 export function getCurrentVersion(): string {
-  return Application.nativeApplicationVersion
-    || Constants.expoConfig?.version
-    || '1.0.0';
+  return APP_VERSION;
 }
 
 export async function checkForUpdate(): Promise<UpdateInfo | null> {
   try {
-    const current = getCurrentVersion();
     const res = await fetch(UPDATE_URL + '?t=' + Date.now());
     if (!res.ok) return null;
     const info: UpdateInfo = await res.json();
-    if (info.version !== current) return info;
+    if (info.version !== APP_VERSION) return info;
     return null;
   } catch {
     return null;
