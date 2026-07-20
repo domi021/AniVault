@@ -79,6 +79,16 @@ export const en = {
     guest: 'Guest',
     account: 'Account',
   },
+  watch: {
+    episode: 'Episode',
+    all: 'ALL',
+    sub: 'SUB',
+    dub: 'DUB',
+    loading: 'Loading episodes...',
+    failedToLoad: 'Failed to load episodes',
+    tryDifferentSource: 'Streaming source may be unavailable. Please try again later.',
+    noEpisodes: 'No episodes found',
+  },
   settings: {
     title: 'Settings',
     theme: 'Theme',

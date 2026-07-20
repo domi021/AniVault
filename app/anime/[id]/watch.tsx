@@ -1,11 +1,10 @@
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useState, useMemo, useLayoutEffect, useCallback } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useMemo } from 'react';
 import { useColors } from '@/src/hooks/useColors';
 import { useTranslation } from '@/src/hooks/useTranslation';
-import { searchStreaming, getStreamAnimeInfo, STREAMING_SOURCES, bestStreamingMatch } from '@/src/api/streaming';
+import { searchStreaming, getStreamAnimeInfo, bestStreamingMatch } from '@/src/api/streaming';
 import { getAnimeById } from '@/src/api/jikan';
 import { useAnimeStore } from '@/src/store/animeStore';
 import { usePreferenceStore, AudioType } from '@/src/store/preferenceStore';
@@ -16,7 +15,6 @@ export default function WatchScreen() {
   const colors = useColors();
   const t = useTranslation();
   const router = useRouter();
-  const navigation = useNavigation();
 
   const anime = useAnimeStore((s) => s.animes.find((a) => a.mal_id === malId));
   const updateEpisodes = useAnimeStore((s) => s.updateEpisodes);
@@ -24,9 +22,6 @@ export default function WatchScreen() {
 
   const audioFilter = usePreferenceStore((s) => s.audioType);
   const setAudioFilter = usePreferenceStore((s) => s.setAudioType);
-  const [selectedSourceIndex, setSelectedSourceIndex] = useState(0);
-
-  const currentSource = STREAMING_SOURCES[selectedSourceIndex];
 
   const animeQuery = useQuery({
     queryKey: ['anime', malId],
@@ -37,7 +32,7 @@ export default function WatchScreen() {
   const searchTitle = (jikanAnime?.title_english || jikanAnime?.title || '').split(/[:/[\]()]+/)[0].trim();
 
   const searchQuery = useQuery({
-    queryKey: ['stream-search', searchTitle, currentSource.id],
+    queryKey: ['stream-search', searchTitle],
     queryFn: () => searchStreaming(searchTitle),
     enabled: searchTitle.length > 0,
   });
@@ -46,7 +41,7 @@ export default function WatchScreen() {
   const streamId = bestMatch?.id ?? bestMatch?.slug;
 
   const streamQuery = useQuery({
-    queryKey: ['stream-info', streamId, currentSource.id],
+    queryKey: ['stream-info', streamId],
     queryFn: () => getStreamAnimeInfo(streamId!),
     enabled: streamId != null,
   });
@@ -55,43 +50,23 @@ export default function WatchScreen() {
 
   const availableTypes = useMemo(() => {
     const types = new Set(allEpisodes.map((ep) => ep.type).filter(Boolean));
-    const result: AudioType[] = ['all'];
+    const result: AudioType[] = [];
     if (types.has('sub')) result.push('sub');
     if (types.has('dub')) result.push('dub');
     return result;
   }, [allEpisodes]);
 
   const episodes = useMemo(() => {
-    if (audioFilter === 'all') return allEpisodes;
+    if (availableTypes.length <= 1) return allEpisodes;
     return allEpisodes.filter((ep) => ep.type === audioFilter);
-  }, [allEpisodes, audioFilter]);
+  }, [allEpisodes, audioFilter, availableTypes]);
 
-  const hasDub = allEpisodes.some((ep) => ep.type === 'dub');
+  const subCount = useMemo(() => allEpisodes.filter((ep) => ep.type === 'sub').length, [allEpisodes]);
+  const dubCount = useMemo(() => allEpisodes.filter((ep) => ep.type === 'dub').length, [allEpisodes]);
+
   const episodesWatched = anime?.episodes_watched ?? 0;
 
-  const cycleAudio = useCallback(() => {
-    const idx = availableTypes.indexOf(audioFilter);
-    setAudioFilter(availableTypes[(idx + 1) % availableTypes.length]);
-  }, [audioFilter, setAudioFilter, availableTypes]);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: availableTypes.length > 1
-        ? () => (
-            <Pressable
-              onPress={cycleAudio}
-              style={[styles.headerToggle, { backgroundColor: colors.tint + '20', borderColor: colors.tint }]}
-            >
-              <Text style={[styles.headerToggleText, { color: colors.tint }]}>
-                {audioFilter.toUpperCase()}
-              </Text>
-            </Pressable>
-          )
-        : undefined,
-    });
-  }, [audioFilter, colors.tint, cycleAudio, navigation, availableTypes]);
-
-  const handleEpisodePress = (episodeNumber: number, embedUrl: string) => {
+  const handleEpisodePress = (episodeNumber: number, embedUrl: string, type?: 'sub' | 'dub') => {
     if (!anime) {
       addAnime({
         mal_id: malId,
@@ -109,8 +84,11 @@ export default function WatchScreen() {
       updateEpisodes(malId, episodeNumber);
     }
 
-    const sourceParam = currentSource.id !== 'anipub' ? `&source=${currentSource.id}` : '';
-    router.push(`/anime/${malId}/watch/${episodeNumber}?url=${encodeURIComponent(embedUrl)}${sourceParam}`);
+    const sameType = episodes.filter((ep) => ep.type === type);
+    const urls = sameType.map((ep) => ep.embedUrl);
+    const typeParam = type ? `&type=${type}` : '';
+    const urlsParam = `&urls=${encodeURIComponent(JSON.stringify(urls))}`;
+    router.push(`/anime/${malId}/watch/${episodeNumber}?url=${encodeURIComponent(embedUrl)}${typeParam}${urlsParam}`);
   };
 
   return (
@@ -124,46 +102,55 @@ export default function WatchScreen() {
         }}
       />
 
-      <View style={[styles.sourceBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        {STREAMING_SOURCES.map((source, index) => {
-          const active = index === selectedSourceIndex;
-          return (
-            <Pressable
-              key={source.id}
-              onPress={() => setSelectedSourceIndex(index)}
-              style={[
-                styles.sourceBtn,
-                { backgroundColor: active ? colors.tint : 'transparent', borderColor: active ? colors.tint : colors.border },
-              ]}
-            >
-              <Text style={[styles.sourceBtnText, { color: active ? '#fff' : colors.text }]}>
-                {source.name}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {availableTypes.length > 1 && (
+        <View style={[styles.audioBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <View style={[styles.audioSegment, { backgroundColor: colors.background + '80', borderColor: colors.border }]}>
+            {availableTypes.map((type) => {
+              const active = audioFilter === type;
+              const label = type === 'sub' ? t.watch.sub : t.watch.dub;
+              const count = type === 'sub' ? subCount : dubCount;
+              return (
+                <Pressable
+                  key={type}
+                  onPress={() => setAudioFilter(type)}
+                  style={[
+                    styles.audioSegmentBtn,
+                    active && { backgroundColor: colors.tint },
+                  ]}
+                >
+                  <Text style={[styles.audioSegmentText, { color: active ? '#fff' : colors.text }]}>
+                    {label}
+                  </Text>
+                  <Text style={[styles.audioSegmentCount, { color: active ? '#ffffffaa' : colors.secondaryText }]}>
+                    {count}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      )}
 
       {searchQuery.isLoading || streamQuery.isLoading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.tint} />
           <Text style={[styles.loadingText, { color: colors.secondaryText }]}>
-            Loading episodes...
+            {t.watch.loading}
           </Text>
         </View>
       ) : searchQuery.isError || streamQuery.isError ? (
         <View style={styles.center}>
           <Text style={[styles.errorText, { color: colors.secondaryText }]}>
-            Failed to load episodes
+            {t.watch.failedToLoad}
           </Text>
           <Text style={[styles.errorSub, { color: colors.secondaryText }]}>
-            The streaming source may be unavailable. Try a different source above.
+            {t.watch.tryDifferentSource}
           </Text>
         </View>
       ) : episodes.length === 0 ? (
         <View style={styles.center}>
           <Text style={[styles.errorText, { color: colors.secondaryText }]}>
-            No episodes found
+            {t.watch.noEpisodes}
           </Text>
         </View>
       ) : (
@@ -179,24 +166,29 @@ export default function WatchScreen() {
                   styles.episodeCard,
                   { backgroundColor: colors.card, borderColor: watched ? colors.tint : colors.border },
                 ]}
-                onPress={() => handleEpisodePress(item.episodeNumber, item.embedUrl)}
+                onPress={() => handleEpisodePress(item.episodeNumber, item.embedUrl, item.type)}
               >
                 <View style={[styles.episodeNum, watched && { backgroundColor: colors.tint + '30' }]}>
                   <Text style={[styles.episodeNumText, { color: watched ? colors.tint : colors.secondaryText }]}>
-                    {watched ? '✓' : item.episodeNumber}
+                    {watched ? '\u2713' : item.episodeNumber}
                   </Text>
                 </View>
                 <View style={styles.episodeInfo}>
                   <Text style={[styles.episodeTitle, { color: colors.text }]}>
-                    Episode {item.episodeNumber}
+                    {t.watch.episode} {item.episodeNumber}
                   </Text>
                   {item.type && (
-                    <Text style={[styles.episodeType, { color: colors.secondaryText }]}>
-                      {item.type.toUpperCase()}
-                    </Text>
+                    <View style={[styles.typeBadge, {
+                      backgroundColor: item.type === 'dub' ? '#8b5cf620' : '#3b82f620',
+                      borderColor: item.type === 'dub' ? '#8b5cf660' : '#3b82f660',
+                    }]}>
+                      <Text style={[styles.typeBadgeText, { color: item.type === 'dub' ? '#8b5cf6' : '#3b82f6' }]}>
+                        {item.type === 'sub' ? t.watch.sub : t.watch.dub}
+                      </Text>
+                    </View>
                   )}
                 </View>
-                <Text style={[styles.playIcon, { color: colors.tint }]}>▶</Text>
+                <Text style={[styles.playIcon, { color: colors.tint }]}>{'\u25B6'}</Text>
               </Pressable>
             );
           }}
@@ -213,28 +205,25 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
   errorSub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
   list: { padding: 12, gap: 8 },
-  sourceBar: {
-    flexDirection: 'row',
-    gap: 8,
+  audioBar: {
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
   },
-  sourceBtn: {
+  audioSegment: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 3,
+  },
+  audioSegmentBtn: {
     flex: 1,
     paddingVertical: 8,
     borderRadius: 8,
-    borderWidth: 1,
     alignItems: 'center',
   },
-  sourceBtnText: { fontSize: 12, fontWeight: '600' },
-  headerToggle: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  headerToggleText: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
+  audioSegmentText: { fontSize: 13, fontWeight: '700' },
+  audioSegmentCount: { fontSize: 10, fontWeight: '500', marginTop: 1 },
   episodeCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -254,6 +243,12 @@ const styles = StyleSheet.create({
   episodeNumText: { fontSize: 16, fontWeight: '700' },
   episodeInfo: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
   episodeTitle: { fontSize: 15, fontWeight: '600' },
-  episodeType: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, opacity: 0.6 },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  typeBadgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
   playIcon: { fontSize: 18 },
 });

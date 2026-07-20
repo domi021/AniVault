@@ -1,5 +1,4 @@
-[x] >only shows 12 episodes even if there are more
-[x] >sub and dub switch at the top right corner at episode select 
-[x] >change so there are 3 preselactable sources instead of link
-[x] >search feature not working
-[x] >after pressing watch automatically add to watching list
+domi ~/project/anime-tracker 月光 eas build --platform android --profile preview
+Project config: Slug for project identified by "extra.eas.projectId" (anime-tracker) does not match the "slug" field (anivault). Learn more
+    Error: build command failed.
+domi ~/project/anime-tracker 月光 

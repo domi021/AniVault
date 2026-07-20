@@ -79,6 +79,16 @@ export const es = {
     guest: 'Invitado',
     account: 'Cuenta',
   },
+  watch: {
+    episode: 'Episodio',
+    all: 'TODOS',
+    sub: 'SUB',
+    dub: 'DUB',
+    loading: 'Cargando episodios...',
+    failedToLoad: 'Error al cargar episodios',
+    tryDifferentSource: 'La fuente de streaming puede no estar disponible. Intenta de nuevo mas tarde.',
+    noEpisodes: 'No se encontraron episodios',
+  },
   settings: {
     title: 'Ajustes',
     theme: 'Tema',

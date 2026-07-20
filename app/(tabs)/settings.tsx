@@ -9,7 +9,6 @@ import { useAuthStore } from '@/src/store/authStore';
 import { supabase } from '@/src/lib/supabase';
 import { getAniList, mapAniListStatus, parseAnimeText, searchAnimeByTitle } from '@/src/api/jikan';
 import { useAnimeStore, SortOrder } from '@/src/store/animeStore';
-import { setStreamingBaseUrl, getStreamingBaseUrl, STREAMING_SOURCES } from '@/src/api/streaming';
 
 const MODES: { key: ThemeMode; labelKey: keyof Translations['settings'] }[] = [
   { key: 'light', labelKey: 'light' },
@@ -50,7 +49,6 @@ export default function SettingsScreen() {
   const [pasting, setPasting] = useState(false);
   const [pasteProgress, setPasteProgress] = useState({ done: 0, total: 0 });
   const [deleting, setDeleting] = useState(false);
-  const [streamUrl, setStreamUrl] = useState(getStreamingBaseUrl());
 
   const handleImport = async () => {
     const name = username.trim();
@@ -233,41 +231,6 @@ export default function SettingsScreen() {
             </Text>
           </Pressable>
         ))}
-      </View>
-
-      <Text style={[styles.heading, { color: colors.text, marginTop: 32 }]}>
-        Streaming Source
-      </Text>
-
-      <View style={styles.modeRow}>
-        {STREAMING_SOURCES.map((source) => {
-          const active = streamUrl === source.baseUrl;
-          return (
-            <Pressable
-              key={source.id}
-              onPress={() => {
-                setStreamUrl(source.baseUrl);
-                setStreamingBaseUrl(source.baseUrl);
-              }}
-              style={[
-                styles.modeBtn,
-                {
-                  backgroundColor: active ? colors.tint : colors.card,
-                  borderColor: active ? colors.tint : colors.border,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.modeLabel,
-                  { color: active ? '#fff' : colors.text },
-                ]}
-              >
-                {source.name}
-              </Text>
-            </Pressable>
-          );
-        })}
       </View>
 
       <Text style={[styles.heading, { color: colors.text, marginTop: 32 }]}>

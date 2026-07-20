@@ -79,6 +79,16 @@ export const ja = {
     guest: 'ゲスト',
     account: 'アカウント',
   },
+  watch: {
+    episode: 'エピソード',
+    all: 'すべて',
+    sub: '字幕',
+    dub: '吹替',
+    loading: 'エピソードを読み込み中...',
+    failedToLoad: 'エピソードの読み込みに失敗しました',
+    tryDifferentSource: 'ストリーミングソースが利用できない可能性があります。後でもう一度お試しください。',
+    noEpisodes: 'エピソードが見つかりません',
+  },
   settings: {
     title: '設定',
     theme: 'テーマ',

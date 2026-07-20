@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type AudioType = 'all' | 'sub' | 'dub';
+export type AudioType = 'sub' | 'dub';
 
 interface PreferenceState {
   audioType: AudioType;
@@ -12,7 +12,7 @@ interface PreferenceState {
 export const usePreferenceStore = create<PreferenceState>()(
   persist(
     (set) => ({
-      audioType: 'all',
+      audioType: 'sub',
       setAudioType: (audioType) => set({ audioType }),
     }),
     {
