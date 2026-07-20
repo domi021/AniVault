@@ -156,8 +156,8 @@ export default function EpisodePlayerScreen() {
             injectedJavaScriptBeforeContentLoaded={getAdBlockJS()}
             injectedJavaScript={getPlayerJS()}
             onShouldStartLoadWithRequest={(request) => !shouldBlockAdUrl(request.url)}
+            onLoadEnd={() => clearTimeout(loadTimer.current)}
             onError={handleError}
-            onHttpError={handleError}
             renderLoading={() => (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={colors.tint} />
