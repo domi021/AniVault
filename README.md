@@ -9,7 +9,6 @@ Your all-in-one anime companion — track, discover, and stream your favorite an
 - **Search** — fast anime search powered by AniList GraphQL API
 - **Anime Details** — rate (0–10), track episodes, mark as favorite
 - **Watch** — stream episodes with embedded WebView player, ad-blocking, and double-tap skip
-- **Multiple Sources** — choose between AniPub, AnimeUnity, and AnimePahe streaming sources
 - **Sub/Dub Toggle** — switch between subbed and dubbed episodes with a persistent preference
 - **Recommendations** — discover new anime based on your tracked list
 - **Auth** — email/password signup and login via Supabase
