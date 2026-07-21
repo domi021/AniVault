@@ -1,4 +1,0 @@
-domi ~/project/anime-tracker 月光 eas build --platform android --profile preview
-Project config: Slug for project identified by "extra.eas.projectId" (anime-tracker) does not match the "slug" field (anivault). Learn more
-    Error: build command failed.
-domi ~/project/anime-tracker 月光 
