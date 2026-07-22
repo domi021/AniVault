@@ -18,13 +18,13 @@ jobs:
       - name: Trigger EAS Build
         id: eas
         run: |
-          npx eas build --platform android --profile preview --non-interactive --wait --json > build.json
+          npx eas-cli build --platform android --profile preview --non-interactive --wait --json > build.json
           echo "id=$(jq -r '.id' build.json)" >> $GITHUB_OUTPUT
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Download APK
-        run: npx eas build:download --platform android --id ${{ steps.eas.outputs.id }} --output app-release.apk --non-interactive
+        run: npx eas-cli build:download --platform android --id ${{ steps.eas.outputs.id }} --output app-release.apk --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
