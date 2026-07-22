@@ -78,14 +78,27 @@ function normalizeTitle(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-function derivativePenalty(name: string): number {
+function formatBonus(name: string, format: string | undefined): number {
+  const lower = name.toLowerCase();
+  const isMovieEntry = /\bmovie\b|\bfilm\b/.test(lower);
+  if (format === 'MOVIE') {
+    return isMovieEntry ? 200 : -100;
+  }
+  if (format === 'TV' || format === 'ONA') {
+    return isMovieEntry ? -200 : 0;
+  }
+  return 0;
+}
+
+function derivativePenalty(name: string, format: string | undefined): number {
   const lower = name.toLowerCase();
   let penalty = 0;
-  if (/\bmovie\b|\bfilm\b/.test(lower)) penalty += 200;
-  if (/\bspecials?\b|\bona\b|\bova\b|\boad\b|\brecap\b/.test(lower)) penalty += 150;
-  if (/\barc\b/.test(lower)) penalty += 100;
+  if (/\barc\b/.test(lower)) penalty += 200;
   if (/\bpart\s*[2-9]|\bseason\s*[2-9]/.test(lower)) penalty += 100;
   if (/\b(ii|iii|iv|v|vi|vii|viii|ix|x)\b/.test(lower) || /\br[2-9]\b/.test(lower)) penalty += 100;
+  if (format === 'MOVIE') {
+    if (/\bspecials?\b|\bona\b|\bova\b|\boad\b|\brecap\b/.test(lower)) penalty += 150;
+  }
   return penalty;
 }
 
@@ -131,35 +144,60 @@ export async function searchStreaming(query: string, baseUrl?: string): Promise<
   return [];
 }
 
-export function bestStreamingMatch(results: StreamSearchResult[], title: string): StreamSearchResult | undefined {
+export function bestStreamingMatch(results: StreamSearchResult[], title: string | string[], format?: string): StreamSearchResult | undefined {
   if (results.length === 0) return undefined;
   if (results.length === 1) return results[0];
 
-  const normTitle = normalizeTitle(title);
-  const titleWords = normTitle.split(/(?=[a-z0-9])/).filter(Boolean);
+  const titles = Array.isArray(title) ? title : [title];
+  const isMovie = format === 'MOVIE';
 
-  let best = results[0];
+  function scoreEntry(r: StreamSearchResult): number {
+    const normName = normalizeTitle(r.title);
+    let best = -Infinity;
+
+    for (const t of titles) {
+      const normTitle = normalizeTitle(t);
+      if (normName === normTitle) return Infinity;
+
+      const fBonus = formatBonus(r.title, format);
+      const dPenalty = derivativePenalty(r.title, format);
+
+      let score: number;
+
+      if ((normName.startsWith(normTitle) || normTitle.startsWith(normName)) &&
+          (!isMovie || /\bmovie\b|\bfilm\b/i.test(r.title))) {
+        score = 1000 - Math.abs(normName.length - normTitle.length) + fBonus - dPenalty;
+      } else {
+        const titleWords = t.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+        const nameWords = r.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= 3);
+        const fTitleWords = titleWords.filter((w) => w.length >= 3);
+        const matched = fTitleWords.filter((w) => nameWords.some((nw) => nw.includes(w) || w.includes(nw)));
+        const recall = matched.length / Math.max(fTitleWords.length, 1);
+        const precision = matched.length / Math.max(nameWords.length, 1);
+        score = (recall + precision) / 2 * 500 + fBonus - dPenalty;
+      }
+
+      if (score > best) best = score;
+    }
+
+    return best;
+  }
+
+  let best: StreamSearchResult | undefined;
   let bestScore = -Infinity;
 
   for (const r of results) {
-    const normName = normalizeTitle(r.title);
-    if (normName === normTitle) return r;
-
-    const penalty = derivativePenalty(r.title);
-
-    if (normName.startsWith(normTitle) || normTitle.startsWith(normName)) {
-      const score = 1000 - Math.abs(normName.length - normTitle.length) + penalty;
-      if (score > bestScore) { bestScore = score; best = r; }
-      continue;
+    const score = scoreEntry(r);
+    if (score === Infinity) return r;
+    const rLen = normalizeTitle(r.title).length;
+    const bLen = best ? normalizeTitle(best.title).length : Infinity;
+    if (score > bestScore || (score === bestScore && rLen < bLen)) {
+      bestScore = score;
+      best = r;
     }
-
-    const nameWords = normName.split(/(?=[a-z0-9])/).filter(Boolean);
-    const matched = titleWords.filter((w) => nameWords.some((nw) => nw.includes(w) || w.includes(nw)));
-    const score = (matched.length / Math.max(titleWords.length, 1)) * 500 + penalty;
-    if (score > bestScore) { bestScore = score; best = r; }
   }
 
-  return best;
+  return bestScore > 0 ? best : results[0];
 }
 
 export async function getStreamAnimeInfo(animeIdOrSlug: string | number, baseUrl?: string): Promise<StreamAnimeInfo> {

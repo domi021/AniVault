@@ -29,15 +29,25 @@ export default function WatchScreen() {
   });
 
   const jikanAnime = animeQuery.data?.data;
-  const searchTitle = (jikanAnime?.title_english || jikanAnime?.title || '').split(/[:/[\]()]+/)[0].trim();
+  const searchTitle = (jikanAnime?.title_english || jikanAnime?.title || '').trim();
+  const altSearchTitle = jikanAnime?.title ? jikanAnime.title.trim() : '';
 
   const searchQuery = useQuery({
-    queryKey: ['stream-search', searchTitle],
-    queryFn: () => searchStreaming(searchTitle),
+    queryKey: ['stream-search', searchTitle, altSearchTitle],
+    queryFn: async () => {
+      const [primary, secondary] = await Promise.all([
+        searchStreaming(searchTitle),
+        altSearchTitle && altSearchTitle !== searchTitle ? searchStreaming(altSearchTitle) : Promise.resolve([]),
+      ]);
+      const seen = new Set(primary.map((r) => r.id));
+      return [...primary, ...secondary.filter((r) => !seen.has(r.id))];
+    },
     enabled: searchTitle.length > 0,
   });
 
-  const bestMatch = searchQuery.data ? bestStreamingMatch(searchQuery.data, jikanAnime?.title_english || jikanAnime?.title || searchTitle) : undefined;
+  const matchTitle = jikanAnime?.title_english || jikanAnime?.title || searchTitle;
+  const matchTitleAlt = jikanAnime?.title || jikanAnime?.title_english || searchTitle;
+  const bestMatch = searchQuery.data ? bestStreamingMatch(searchQuery.data, [matchTitle, matchTitleAlt], jikanAnime?.type) : undefined;
   const streamId = bestMatch?.id ?? bestMatch?.slug;
 
   const streamQuery = useQuery({
@@ -47,28 +57,22 @@ export default function WatchScreen() {
   });
 
   const allEpisodes = streamQuery.data?.episodes ?? [];
-  const totalEpisodes = jikanAnime?.episodes;
-
-  const validEpisodes = useMemo(() => {
-    if (!totalEpisodes) return allEpisodes;
-    return allEpisodes.filter((ep) => ep.episodeNumber <= totalEpisodes);
-  }, [allEpisodes, totalEpisodes]);
 
   const availableTypes = useMemo(() => {
-    const types = new Set(validEpisodes.map((ep) => ep.type).filter(Boolean));
+    const types = new Set(allEpisodes.map((ep) => ep.type).filter(Boolean));
     const result: AudioType[] = [];
     if (types.has('sub')) result.push('sub');
     if (types.has('dub')) result.push('dub');
     return result;
-  }, [validEpisodes]);
+  }, [allEpisodes]);
 
   const episodes = useMemo(() => {
-    if (availableTypes.length <= 1) return validEpisodes;
-    return validEpisodes.filter((ep) => ep.type === audioFilter);
-  }, [validEpisodes, audioFilter, availableTypes]);
+    if (availableTypes.length <= 1) return allEpisodes;
+    return allEpisodes.filter((ep) => ep.type === audioFilter);
+  }, [allEpisodes, audioFilter, availableTypes]);
 
-  const subCount = useMemo(() => validEpisodes.filter((ep) => ep.type === 'sub').length, [validEpisodes]);
-  const dubCount = useMemo(() => validEpisodes.filter((ep) => ep.type === 'dub').length, [validEpisodes]);
+  const subCount = useMemo(() => allEpisodes.filter((ep) => ep.type === 'sub').length, [allEpisodes]);
+  const dubCount = useMemo(() => allEpisodes.filter((ep) => ep.type === 'dub').length, [allEpisodes]);
 
   const episodesWatched = anime?.episodes_watched ?? 0;
 
