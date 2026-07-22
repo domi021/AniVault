@@ -47,22 +47,28 @@ export default function WatchScreen() {
   });
 
   const allEpisodes = streamQuery.data?.episodes ?? [];
+  const totalEpisodes = jikanAnime?.episodes;
+
+  const validEpisodes = useMemo(() => {
+    if (!totalEpisodes) return allEpisodes;
+    return allEpisodes.filter((ep) => ep.episodeNumber <= totalEpisodes);
+  }, [allEpisodes, totalEpisodes]);
 
   const availableTypes = useMemo(() => {
-    const types = new Set(allEpisodes.map((ep) => ep.type).filter(Boolean));
+    const types = new Set(validEpisodes.map((ep) => ep.type).filter(Boolean));
     const result: AudioType[] = [];
     if (types.has('sub')) result.push('sub');
     if (types.has('dub')) result.push('dub');
     return result;
-  }, [allEpisodes]);
+  }, [validEpisodes]);
 
   const episodes = useMemo(() => {
-    if (availableTypes.length <= 1) return allEpisodes;
-    return allEpisodes.filter((ep) => ep.type === audioFilter);
-  }, [allEpisodes, audioFilter, availableTypes]);
+    if (availableTypes.length <= 1) return validEpisodes;
+    return validEpisodes.filter((ep) => ep.type === audioFilter);
+  }, [validEpisodes, audioFilter, availableTypes]);
 
-  const subCount = useMemo(() => allEpisodes.filter((ep) => ep.type === 'sub').length, [allEpisodes]);
-  const dubCount = useMemo(() => allEpisodes.filter((ep) => ep.type === 'dub').length, [allEpisodes]);
+  const subCount = useMemo(() => validEpisodes.filter((ep) => ep.type === 'sub').length, [validEpisodes]);
+  const dubCount = useMemo(() => validEpisodes.filter((ep) => ep.type === 'dub').length, [validEpisodes]);
 
   const episodesWatched = anime?.episodes_watched ?? 0;
 
