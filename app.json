@@ -16,6 +16,7 @@
     },
     "android": {
       "package": "com.animetracker.app",
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
