@@ -13,23 +13,21 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
       - run: npm ci
 
-      - name: Trigger EAS Build
-        id: eas
-        run: |
-          npx eas-cli build --platform android --profile preview --non-interactive --wait --json > build.json
-          echo "id=$(jq -r '.id' build.json)" >> $GITHUB_OUTPUT
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      - name: Generate native project
+        run: npx expo prebuild --platform android --no-install
 
-      - name: Download APK
-        run: npx eas-cli build:download --platform android --id ${{ steps.eas.outputs.id }} --output app-release.apk --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew :app:assembleRelease
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app-release.apk
+          files: android/app/build/outputs/apk/release/app-release.apk
           generate_release_notes: true
