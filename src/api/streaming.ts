@@ -78,6 +78,47 @@ function normalizeTitle(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+const SEASON_STOP_WORDS = new Set(['the', 'season', 'part', 'movie', 'film', 'final']);
+
+function seasonSubtitle(title: string): string {
+  const parts = title.split(/\s+-\s+/);
+  return parts.length > 1 ? parts[parts.length - 1].trim().toLowerCase() : '';
+}
+
+function subtitleWords(subtitle: string): string[] {
+  return subtitle.split(/[^a-z0-9]+/).filter((w) => w.length >= 4 && !SEASON_STOP_WORDS.has(w));
+}
+
+function seasonNumber(title: string): string | null {
+  const lower = title.toLowerCase();
+  const m = lower.match(/(?:season|part)\s*([0-9]+|[ivxlc]+)/);
+  if (m) return m[1];
+  const n = lower.match(/([0-9]+)(?:st|nd|rd|th)\s+season/);
+  return n ? n[1] : null;
+}
+
+function hasSeasonNumber(resultTitle: string, num: string): boolean {
+  const lower = resultTitle.toLowerCase();
+  return (
+    new RegExp(`(?:season|part)\\s*${num}`, 'i').test(lower) ||
+    new RegExp(`${num}(?:st|nd|rd|th)\\s+season`, 'i').test(lower)
+  );
+}
+
+function isValidSeasonMatch(resultTitle: string, titles: string[]): boolean {
+  const normResult = normalizeTitle(resultTitle);
+  let strictSeen = false;
+  for (const t of titles) {
+    const sub = seasonSubtitle(t);
+    if (!sub) continue;
+    const words = subtitleWords(sub);
+    if (words.length === 0) continue;
+    strictSeen = true;
+    if (words.every((w) => normResult.includes(w))) return true;
+  }
+  return !strictSeen;
+}
+
 function formatBonus(name: string, format: string | undefined): number {
   const lower = name.toLowerCase();
   const isMovieEntry = /\bmovie\b|\bfilm\b/.test(lower);
@@ -93,7 +134,6 @@ function formatBonus(name: string, format: string | undefined): number {
 function derivativePenalty(name: string, format: string | undefined): number {
   const lower = name.toLowerCase();
   let penalty = 0;
-  if (/\barc\b/.test(lower)) penalty += 200;
   if (/\bpart\s*[2-9]|\bseason\s*[2-9]/.test(lower)) penalty += 100;
   if (/\b(ii|iii|iv|v|vi|vii|viii|ix|x)\b/.test(lower) || /\br[2-9]\b/.test(lower)) penalty += 100;
   if (format === 'MOVIE') {
@@ -105,12 +145,16 @@ function derivativePenalty(name: string, format: string | undefined): number {
 function parseSearchResults(data: any, base: string): StreamSearchResult[] {
   if (!data || data.found === false) return [];
   const items = Array.isArray(data) ? data : [data];
-  return items.map((r: any) => ({
-    id: r.Id,
-    title: r.Name,
-    slug: r.finder,
-    image: r.Image?.startsWith('http') ? r.Image : `${base}/${r.Image}`,
-  }));
+  return items.map((r: any) => {
+    const id = r.Id ?? r._id;
+    const image = r.Image ?? r.ImagePath;
+    return {
+      id,
+      title: r.Name,
+      slug: r.finder,
+      image: image?.startsWith('http') ? image : image ? `${base}/${image}` : '',
+    };
+  });
 }
 
 function queryVariations(query: string): string[] {
@@ -144,12 +188,18 @@ export async function searchStreaming(query: string, baseUrl?: string): Promise<
   return [];
 }
 
+const MIN_MATCH_SCORE = 200;
+const SEASON_MATCH_BONUS = 400;
+
 export function bestStreamingMatch(results: StreamSearchResult[], title: string | string[], format?: string): StreamSearchResult | undefined {
   if (results.length === 0) return undefined;
-  if (results.length === 1) return results[0];
 
   const titles = Array.isArray(title) ? title : [title];
   const isMovie = format === 'MOVIE';
+
+  if (results.length === 1) {
+    return isValidSeasonMatch(results[0].title, titles) ? results[0] : undefined;
+  }
 
   function scoreEntry(r: StreamSearchResult): number {
     const normName = normalizeTitle(r.title);
@@ -177,6 +227,11 @@ export function bestStreamingMatch(results: StreamSearchResult[], title: string 
         score = (recall + precision) / 2 * 500 + fBonus - dPenalty;
       }
 
+      const seasonNum = seasonNumber(t);
+      if (seasonNum) {
+        score += hasSeasonNumber(r.title, seasonNum) ? SEASON_MATCH_BONUS : -SEASON_MATCH_BONUS;
+      }
+
       if (score > best) best = score;
     }
 
@@ -187,8 +242,10 @@ export function bestStreamingMatch(results: StreamSearchResult[], title: string 
   let bestScore = -Infinity;
 
   for (const r of results) {
+    if (!isValidSeasonMatch(r.title, titles)) continue;
     const score = scoreEntry(r);
     if (score === Infinity) return r;
+    if (score < MIN_MATCH_SCORE) continue;
     const rLen = normalizeTitle(r.title).length;
     const bLen = best ? normalizeTitle(best.title).length : Infinity;
     if (score > bestScore || (score === bestScore && rLen < bLen)) {
@@ -197,7 +254,7 @@ export function bestStreamingMatch(results: StreamSearchResult[], title: string 
     }
   }
 
-  return bestScore > 0 ? best : results[0];
+  return bestScore > 0 ? best : undefined;
 }
 
 export async function getStreamAnimeInfo(animeIdOrSlug: string | number, baseUrl?: string): Promise<StreamAnimeInfo> {

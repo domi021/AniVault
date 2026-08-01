@@ -162,6 +162,9 @@ export default function WatchScreen() {
           <Text style={[styles.errorText, { color: colors.secondaryText }]}>
             {t.watch.noEpisodes}
           </Text>
+          <Text style={[styles.errorSub, { color: colors.secondaryText }]}>
+            {t.watch.tryDifferentSource}
+          </Text>
         </View>
       ) : (
         <FlatList
