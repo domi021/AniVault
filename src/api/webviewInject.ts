@@ -95,6 +95,7 @@ export function getPlayerJS(): string {
 
       try {
         document.querySelectorAll(FIXED_OVERLAY).forEach(function(e) {
+          if (e.querySelector('video') || e.id === 'megaplay-player') return;
           var style = window.getComputedStyle(e);
           if (style.position !== 'fixed') return;
           var zi = parseInt(style.zIndex, 10);
@@ -159,6 +160,8 @@ export function getPlayerJS(): string {
       if (!t) return;
       var now = Date.now();
       if (now - lastTap < 350 && Math.abs(t.clientX - lastTapX) < 50) {
+        e.preventDefault();
+        e.stopPropagation();
         var v = document.querySelector('video');
         if (v && isFinite(v.duration)) {
           if (t.clientX < window.innerWidth / 2) {
@@ -174,7 +177,7 @@ export function getPlayerJS(): string {
         lastTap = now;
         lastTapX = t.clientX;
       }
-    }, { passive: true, capture: true });
+    }, { passive: false, capture: true });
   } catch(e) {}
 })();
 true;

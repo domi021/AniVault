@@ -2,7 +2,7 @@ import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 import { version as pkgVersion } from '../../package.json';
 
-const UPDATE_URL = 'https://raw.githubusercontent.com/domi021/AniVault/main/version.json';
+const UPDATE_URL = 'https://raw.githubusercontent.com/domi021/anime-tracker/main/version.json';
 
 export interface UpdateInfo {
   version: string;
@@ -31,5 +31,5 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
 }
 
 export function getUpdateUrl(): string {
-  return 'https://github.com/domi021/AniVault/releases/latest';
+  return 'https://github.com/domi021/anime-tracker/releases/latest';
 }

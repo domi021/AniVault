@@ -14,7 +14,7 @@ export default function ForceUpdate() {
   }, []);
 
   const handleUpdate = () => {
-    Linking.openURL(getUpdateUrl());
+    Linking.openURL(update?.apkUrl || getUpdateUrl());
   };
 
   return (

@@ -86,8 +86,8 @@ export const es = {
     dub: 'DUB',
     loading: 'Cargando episodios...',
     failedToLoad: 'Error al cargar episodios',
-    tryDifferentSource: 'La fuente de streaming puede no estar disponible. Intenta de nuevo mas tarde.',
-    noEpisodes: 'No se encontraron episodios',
+    tryDifferentSource: 'Este anime puede no estar en nuestra fuente de streaming aún. Vuelve más tarde.',
+    noEpisodes: 'Aún no hay episodios disponibles para este anime',
   },
   settings: {
     title: 'Ajustes',

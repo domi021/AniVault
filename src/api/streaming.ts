@@ -219,12 +219,16 @@ export function bestStreamingMatch(results: StreamSearchResult[], title: string 
         score = 1000 - Math.abs(normName.length - normTitle.length) + fBonus - dPenalty;
       } else {
         const titleWords = t.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-        const nameWords = r.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= 3);
-        const fTitleWords = titleWords.filter((w) => w.length >= 3);
+        const nameWords = r.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= 4);
+        const fTitleWords = titleWords.filter((w) => w.length >= 4);
         const matched = fTitleWords.filter((w) => nameWords.some((nw) => nw.includes(w) || w.includes(nw)));
-        const recall = matched.length / Math.max(fTitleWords.length, 1);
-        const precision = matched.length / Math.max(nameWords.length, 1);
-        score = (recall + precision) / 2 * 500 + fBonus - dPenalty;
+        if (matched.length < 2) {
+          score = -1000;
+        } else {
+          const recall = matched.length / Math.max(fTitleWords.length, 1);
+          const precision = matched.length / Math.max(nameWords.length, 1);
+          score = (recall + precision) / 2 * 500 + fBonus - dPenalty;
+        }
       }
 
       const seasonNum = seasonNumber(t);

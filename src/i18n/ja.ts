@@ -86,8 +86,8 @@ export const ja = {
     dub: '吹替',
     loading: 'エピソードを読み込み中...',
     failedToLoad: 'エピソードの読み込みに失敗しました',
-    tryDifferentSource: 'ストリーミングソースが利用できない可能性があります。後でもう一度お試しください。',
-    noEpisodes: 'エピソードが見つかりません',
+    tryDifferentSource: 'このアニメはまだ配信ソースにない可能性があります。後でもう一度お試しください。',
+    noEpisodes: 'このアニメはまだエピソードがありません',
   },
   settings: {
     title: '設定',
