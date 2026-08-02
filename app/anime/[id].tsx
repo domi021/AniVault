@@ -8,7 +8,7 @@ import { getAnimeById } from '@/src/api/jikan';
 import { useAnimeStore } from '@/src/store/animeStore';
 import { WatchStatus } from '@/src/types';
 import { useState } from 'react';
-import { BackButton } from '@/src/components/BackButton';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 const STATUS_OPTIONS: { key: WatchStatus; labelKey: keyof Translations['detail']; color: string }[] = [
   { key: 'watching', labelKey: 'watching', color: '#7c3aed' },
@@ -79,22 +79,29 @@ export default function AnimeDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ScreenHeader />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
       </View>
     );
   }
 
   if (!anime) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>{t.detail.animeNotFound}</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ScreenHeader />
+        <View style={styles.center}>
+          <Text style={{ color: colors.text }}>{t.detail.animeNotFound}</Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenHeader title={anime.title_english || anime.title} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Stack.Screen options={{ title: anime.title_english || anime.title }} />
 
@@ -255,7 +262,6 @@ export default function AnimeDetailScreen() {
         )}
       </View>
       </ScrollView>
-      <BackButton />
     </View>
   );
 }

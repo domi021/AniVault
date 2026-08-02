@@ -2,6 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useColors } from '@/src/hooks/useColors';
@@ -69,9 +70,18 @@ function RootLayoutNav() {
         {authed && (
           <>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="anime/[id]" options={{ headerShown: true, title: 'Anime Details' }} />
-            <Stack.Screen name="anime/[id]/watch" options={{ headerShown: true, title: 'Episodes' }} />
-            <Stack.Screen name="anime/[id]/watch/[episodeId]" options={{ headerShown: true, title: 'Player' }} />
+            <Stack.Screen
+              name="anime/[id]"
+              options={{ headerShown: Platform.OS === 'web' ? false : true }}
+            />
+            <Stack.Screen
+              name="anime/[id]/watch"
+              options={{ headerShown: Platform.OS === 'web' ? false : true }}
+            />
+            <Stack.Screen
+              name="anime/[id]/watch/[episodeId]"
+              options={{ headerShown: Platform.OS === 'web' ? false : true }}
+            />
           </>
         )}
       </Stack>

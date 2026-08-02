@@ -4,7 +4,7 @@ import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { useColors } from '@/src/hooks/useColors';
 import { WebView } from 'react-native-webview';
 import { getAdBlockJS, getPlayerJS, shouldBlockAdUrl, extractIframeSrc } from '@/src/api/webviewInject';
-import { BackButton } from '@/src/components/BackButton';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 declare global {
   interface Window {
@@ -178,13 +178,13 @@ export default function EpisodePlayerScreen() {
       <Stack.Screen
         options={{
           title: `Episode ${episodeId}`,
-          headerShown: true,
+          headerShown: Platform.OS === 'web' ? false : true,
           headerStyle: { backgroundColor: colors.card },
           headerTintColor: colors.text,
         }}
       />
 
-      <BackButton />
+      <ScreenHeader title={`Episode ${episodeId}`} />
 
       {!rawUrl ? (
         <View style={styles.center}>

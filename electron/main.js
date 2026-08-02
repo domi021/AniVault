@@ -34,6 +34,8 @@ const AD_DOMAINS = [
 
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 
+const APP_PORT = 37523;
+
 let currentReferer = null;
 
 const MIME = {
@@ -100,9 +102,19 @@ function serveStatic(req, res) {
 function startServer() {
   return new Promise((resolve) => {
     const server = http.createServer(serveStatic);
-    server.listen(0, '127.0.0.1', () => {
-      resolve({ server, port: server.address().port });
-    });
+    const tryListen = (port) => {
+      server.once('error', (err) => {
+        if (err.code === 'EADDRINUSE' && port === APP_PORT) {
+          tryListen(0);
+          return;
+        }
+        throw err;
+      });
+      server.listen(port, '127.0.0.1', () => {
+        resolve({ server, port: server.address().port });
+      });
+    };
+    tryListen(APP_PORT);
   });
 }
 

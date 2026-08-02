@@ -1,5 +1,5 @@
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useColors } from '@/src/hooks/useColors';
@@ -8,7 +8,7 @@ import { searchStreaming, getStreamAnimeInfo, bestStreamingMatch } from '@/src/a
 import { getAnimeById } from '@/src/api/jikan';
 import { useAnimeStore } from '@/src/store/animeStore';
 import { usePreferenceStore, AudioType } from '@/src/store/preferenceStore';
-import { BackButton } from '@/src/components/BackButton';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 export default function WatchScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -107,13 +107,15 @@ export default function WatchScreen() {
       <Stack.Screen
         options={{
           title: anime?.title || (jikanAnime ? (jikanAnime.title_english || jikanAnime.title) : 'Watch'),
-          headerShown: true,
+          headerShown: Platform.OS === 'web' ? false : true,
           headerStyle: { backgroundColor: colors.card },
           headerTintColor: colors.text,
         }}
       />
 
-      <BackButton />
+      <ScreenHeader
+        title={anime?.title || (jikanAnime ? (jikanAnime.title_english || jikanAnime.title) : 'Watch')}
+      />
 
       {availableTypes.length > 1 && (
         <View style={[styles.audioBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
