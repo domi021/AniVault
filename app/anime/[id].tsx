@@ -89,11 +89,58 @@ export default function AnimeDetailScreen() {
   }
 
   if (!anime) {
+    const handleNotFoundPlan = () => {
+      if (userAnime) {
+        updateStatus(malId, 'plan_to_watch');
+      } else {
+        addAnime({
+          mal_id: malId,
+          title: `MAL #${malId}`,
+          image_url: '',
+          status: 'plan_to_watch',
+          episodes_watched: 0,
+          total_episodes: undefined,
+          score: undefined,
+          added_at: Date.now(),
+        });
+      }
+    };
+
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScreenHeader />
         <View style={styles.center}>
-          <Text style={{ color: colors.text }}>{t.detail.animeNotFound}</Text>
+          <Text style={[styles.notFoundText, { color: colors.text }]}>
+            {t.detail.animeNotFound}
+          </Text>
+          <View style={styles.notFoundActions}>
+            <Pressable
+              onPress={handleNotFoundPlan}
+              style={[
+                styles.notFoundBtn,
+                {
+                  borderColor: colors.tint,
+                  backgroundColor: userAnime?.status === 'plan_to_watch' ? colors.tint + '20' : 'transparent',
+                },
+              ]}
+            >
+              <Text style={[styles.notFoundBtnText, { color: colors.tint }]}>
+                {userAnime?.status === 'plan_to_watch'
+                  ? t.detail.planAdded
+                  : t.detail.plan}
+              </Text>
+            </Pressable>
+            {userAnime && (
+              <Pressable
+                onPress={handleRemove}
+                style={[styles.notFoundBtn, { borderColor: '#ef4444' }]}
+              >
+                <Text style={[styles.notFoundBtnText, { color: '#ef4444' }]}>
+                  {t.detail.remove}
+                </Text>
+              </Pressable>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -293,6 +340,15 @@ function Badge({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  notFoundText: { fontSize: 16, fontWeight: '600' },
+  notFoundActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
+  notFoundBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  notFoundBtnText: { fontSize: 14, fontWeight: '600' },
   content: { paddingBottom: 40 },
   heroWrap: { position: 'relative' },
   hero: { width: '100%', height: 300 },

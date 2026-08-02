@@ -51,6 +51,7 @@ export const en = {
     rating: 'Rating',
     remove: 'Remove from List',
     animeNotFound: 'Anime not found',
+    planAdded: 'In Plan to Watch',
     watch: 'Watch',
   },
   recommend: {
@@ -113,5 +114,7 @@ export const en = {
     sortOrder: 'Sort by Rating',
     sortAsc: 'Lowest first',
     sortDesc: 'Highest first',
+    syncSuccess: 'Successfully synced to cloud!',
+    syncError: 'Sync failed. Please try again.',
   },
 };

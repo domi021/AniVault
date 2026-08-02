@@ -51,6 +51,7 @@ export const es = {
     rating: 'Calificacion',
     remove: 'Eliminar de Lista',
     animeNotFound: 'Anime no encontrado',
+    planAdded: 'En Plan para ver',
     watch: 'Ver',
   },
   recommend: {
@@ -113,5 +114,7 @@ export const es = {
     sortOrder: 'Ordenar por Puntaje',
     sortAsc: 'Menor primero',
     sortDesc: 'Mayor primero',
+    syncSuccess: '¡Sincronizado con la nube!',
+    syncError: 'Error de sincronización. Inténtalo de nuevo.',
   },
 };

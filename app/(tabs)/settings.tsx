@@ -9,6 +9,7 @@ import { useAuthStore } from '@/src/store/authStore';
 import { supabase } from '@/src/lib/supabase';
 import { getAniList, mapAniListStatus, parseAnimeText, searchAnimeByTitle } from '@/src/api/jikan';
 import { useAnimeStore, SortOrder } from '@/src/store/animeStore';
+import { useToastStore } from '@/src/store/toastStore';
 
 const MODES: { key: ThemeMode; labelKey: keyof Translations['settings'] }[] = [
   { key: 'light', labelKey: 'light' },
@@ -49,6 +50,16 @@ export default function SettingsScreen() {
   const [pasting, setPasting] = useState(false);
   const [pasteProgress, setPasteProgress] = useState({ done: 0, total: 0 });
   const [deleting, setDeleting] = useState(false);
+  const showToast = useToastStore((s) => s.showToast);
+
+  const handleSync = async () => {
+    try {
+      await useAnimeStore.getState().syncToServer();
+      showToast(t.settings.syncSuccess);
+    } catch {
+      showToast(t.settings.syncError);
+    }
+  };
 
   const handleImport = async () => {
     const name = username.trim();
@@ -149,7 +160,7 @@ export default function SettingsScreen() {
 
       {session && (
         <Pressable
-          onPress={() => useAnimeStore.getState().syncToServer()}
+          onPress={handleSync}
           style={[styles.syncBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <Text style={[styles.syncBtnText, { color: colors.tint }]}>Sync data to server</Text>

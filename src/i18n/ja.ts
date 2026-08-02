@@ -51,6 +51,7 @@ export const ja = {
     rating: 'レーティング',
     remove: 'リストから削除',
     animeNotFound: 'アニメが見つかりません',
+    planAdded: '視聴予定に追加済み',
     watch: '視聴',
   },
   recommend: {
@@ -113,5 +114,7 @@ export const ja = {
     sortOrder: '評価順に並べ替え',
     sortAsc: '低い順',
     sortDesc: '高い順',
+    syncSuccess: 'クラウドに同期しました！',
+    syncError: '同期に失敗しました。もう一度お試しください。',
   },
 };

@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useColors } from '@/src/hooks/useColors';
 import { useAuthStore } from '@/src/store/authStore';
 import ForceUpdate from '@/src/components/ForceUpdate';
+import { Toast } from '@/src/components/Toast';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -86,6 +87,7 @@ function RootLayoutNav() {
         )}
       </Stack>
       <ForceUpdate />
+      <Toast />
     </>
   );
 }
