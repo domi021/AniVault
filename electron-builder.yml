@@ -23,4 +23,4 @@ linux:
 publish:
   provider: github
   owner: domi021
-  repo: anime-tracker
+  repo: AniVault
