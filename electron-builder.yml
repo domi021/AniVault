@@ -16,10 +16,13 @@ win:
   target: portable
   artifactName: AniVault-${version}-win-${arch}.${ext}
 linux:
-  target: AppImage
+  target:
+    - deb
+    - AppImage
   executableName: anivault
   artifactName: AniVault-${version}-linux-${arch}.${ext}
   category: AudioVideo
+  maintainer: AniVault <anivault@users.noreply.github.com>
 publish:
   provider: github
   owner: domi021
