@@ -16,9 +16,7 @@ win:
   target: portable
   artifactName: AniVault-${version}-win-${arch}.${ext}
 linux:
-  target:
-    - deb
-    - AppImage
+  target: deb
   executableName: anivault
   artifactName: AniVault-${version}-linux-${arch}.${ext}
   category: AudioVideo
