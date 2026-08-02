@@ -8,6 +8,7 @@ import { getAnimeById } from '@/src/api/jikan';
 import { useAnimeStore } from '@/src/store/animeStore';
 import { WatchStatus } from '@/src/types';
 import { useState } from 'react';
+import { BackButton } from '@/src/components/BackButton';
 
 const STATUS_OPTIONS: { key: WatchStatus; labelKey: keyof Translations['detail']; color: string }[] = [
   { key: 'watching', labelKey: 'watching', color: '#7c3aed' },
@@ -93,8 +94,9 @@ export default function AnimeDetailScreen() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
-      <Stack.Screen options={{ title: anime.title_english || anime.title }} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Stack.Screen options={{ title: anime.title_english || anime.title }} />
 
       <View style={styles.heroWrap}>
         <Image
@@ -252,7 +254,9 @@ export default function AnimeDetailScreen() {
           </View>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+      <BackButton />
+    </View>
   );
 }
 

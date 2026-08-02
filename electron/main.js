@@ -108,13 +108,36 @@ function startServer() {
 
 function setupPlayerSession() {
   const ses = session.fromPartition(PLAYER_PARTITION);
+  let currentEmbedOrigin = null;
+
+  const hostOf = (u) => {
+    try {
+      return new URL(u).hostname;
+    } catch {
+      return null;
+    }
+  };
 
   ses.webRequest.onBeforeSendHeaders((details, callback) => {
-    if (currentReferer && details.url && /^https?:/i.test(details.url)) {
-      callback({ requestHeaders: { ...details.requestHeaders, Referer: currentReferer } });
-    } else {
-      callback({ requestHeaders: details.requestHeaders });
+    const requestHeaders = { ...details.requestHeaders };
+    const url = details.url || '';
+
+    if (currentReferer && /^https?:/i.test(url)) {
+      if (details.resourceType === 'mainFrame') {
+        try {
+          currentEmbedOrigin = new URL(url).origin + '/';
+        } catch {
+          currentEmbedOrigin = null;
+        }
+        requestHeaders.Referer = currentReferer;
+      } else if (currentEmbedOrigin && hostOf(url) !== hostOf(currentEmbedOrigin)) {
+        requestHeaders.Referer = currentEmbedOrigin;
+      } else {
+        requestHeaders.Referer = currentReferer;
+      }
     }
+
+    callback({ requestHeaders });
   });
 
   ses.webRequest.onBeforeRequest((details, callback) => {

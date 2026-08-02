@@ -4,6 +4,7 @@ import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { useColors } from '@/src/hooks/useColors';
 import { WebView } from 'react-native-webview';
 import { getAdBlockJS, getPlayerJS, shouldBlockAdUrl, extractIframeSrc } from '@/src/api/webviewInject';
+import { BackButton } from '@/src/components/BackButton';
 
 declare global {
   interface Window {
@@ -182,6 +183,8 @@ export default function EpisodePlayerScreen() {
           headerTintColor: colors.text,
         }}
       />
+
+      <BackButton />
 
       {!rawUrl ? (
         <View style={styles.center}>

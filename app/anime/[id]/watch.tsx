@@ -8,6 +8,7 @@ import { searchStreaming, getStreamAnimeInfo, bestStreamingMatch } from '@/src/a
 import { getAnimeById } from '@/src/api/jikan';
 import { useAnimeStore } from '@/src/store/animeStore';
 import { usePreferenceStore, AudioType } from '@/src/store/preferenceStore';
+import { BackButton } from '@/src/components/BackButton';
 
 export default function WatchScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -111,6 +112,8 @@ export default function WatchScreen() {
           headerTintColor: colors.text,
         }}
       />
+
+      <BackButton />
 
       {availableTypes.length > 1 && (
         <View style={[styles.audioBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
