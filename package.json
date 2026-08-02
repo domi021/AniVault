@@ -34,16 +34,25 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "desktop:web": "expo export --platform web",
+    "desktop:start": "npm run desktop:web && electron electron/",
+    "desktop:smoke": "npm run desktop:web && ANIVAULT_SMOKE=1 electron electron/",
+    "desktop:build": "npm run desktop:web && electron-builder",
+    "desktop:build:win": "npm run desktop:web && electron-builder --win",
+    "desktop:build:linux": "npm run desktop:web && electron-builder --linux",
+    "desktop:release": "npm run desktop:web && electron-builder --publish always"
   },
   "private": true
 }

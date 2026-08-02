@@ -26,8 +26,13 @@ jobs:
         working-directory: android
         run: ./gradlew :app:assembleRelease
 
+      - name: Rename APK
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mv android/app/build/outputs/apk/release/app-release.apk "AniVault-${VERSION}-android.apk"
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: android/app/build/outputs/apk/release/app-release.apk
+          files: AniVault-*-android.apk
           generate_release_notes: true

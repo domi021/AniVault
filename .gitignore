@@ -9,6 +9,10 @@ dist/
 web-build/
 expo-env.d.ts
 
+# Electron desktop build
+release/
+build/
+
 # Native
 .kotlin/
 *.orig.*

@@ -1,6 +1,19 @@
-import { Anime } from '../types';
+import { Anime, RecommendationsResponse, SearchResponse } from '../types';
+import { getKitsuAnimeByMalId, getKitsuRecommendations, searchKitsuAnime, searchKitsuAnimeByTitle } from './kitsu';
+
+export type { Pagination, Recommendation, RecommendationsResponse, SearchResponse } from '../types';
 
 const ANILIST_API = 'https://graphql.anilist.co';
+
+function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), ms);
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+}
 
 async function fetchAniList<T>(query: string, variables: Record<string, any>): Promise<T> {
   const res = await fetch(ANILIST_API, {
@@ -38,16 +51,6 @@ function mapAniListToAnime(m: any): Anime {
   };
 }
 
-export interface Pagination {
-  last_visible_page: number;
-  has_next_page: boolean;
-}
-
-export interface SearchResponse {
-  data: Anime[];
-  pagination: Pagination;
-}
-
 const SEARCH_QUERY = `
 query ($page: Int, $search: String) {
   Page(page: $page, perPage: 25) {
@@ -62,7 +65,7 @@ query ($page: Int, $search: String) {
   }
 }`;
 
-export async function searchAnime(query: string, page = 1): Promise<SearchResponse> {
+async function searchAnimeAniList(query: string, page = 1): Promise<SearchResponse> {
   const data = await fetchAniList<any>(SEARCH_QUERY, { page, search: query });
   const pageData = data.Page;
   return {
@@ -72,6 +75,14 @@ export async function searchAnime(query: string, page = 1): Promise<SearchRespon
       has_next_page: pageData.pageInfo?.hasNextPage ?? false,
     },
   };
+}
+
+export async function searchAnime(query: string, page = 1): Promise<SearchResponse> {
+  try {
+    return await withTimeout(searchAnimeAniList(query, page));
+  } catch {
+    return searchKitsuAnime(query, page);
+  }
 }
 
 const ANIME_BY_ID_QUERY = `
@@ -88,20 +99,18 @@ query ($idMal: Int) {
   }
 }`;
 
-export function getAnimeById(id: number): Promise<{ data: Anime }> {
+function getAnimeByIdAniList(id: number): Promise<{ data: Anime }> {
   return fetchAniList<any>(ANIME_BY_ID_QUERY, { idMal: id }).then((data) => ({
     data: mapAniListToAnime(data.Media),
   }));
 }
 
-export interface Recommendation {
-  entry: Anime;
-  url: string;
-  votes: number;
-}
-
-export interface RecommendationsResponse {
-  data: Recommendation[];
+export async function getAnimeById(id: number): Promise<{ data: Anime }> {
+  try {
+    return await withTimeout(getAnimeByIdAniList(id));
+  } catch {
+    return getKitsuAnimeByMalId(id);
+  }
 }
 
 const RECOMMENDATIONS_QUERY = `
@@ -124,7 +133,7 @@ query ($idMal: Int) {
   }
 }`;
 
-export function getAnimeRecommendations(id: number): Promise<RecommendationsResponse> {
+function getAnimeRecommendationsAniList(id: number): Promise<RecommendationsResponse> {
   return fetchAniList<any>(RECOMMENDATIONS_QUERY, { idMal: id }).then((data) => {
     const edges = data.Media?.recommendations?.edges ?? [];
     return {
@@ -137,6 +146,14 @@ export function getAnimeRecommendations(id: number): Promise<RecommendationsResp
         })),
     };
   });
+}
+
+export async function getAnimeRecommendations(id: number): Promise<RecommendationsResponse> {
+  try {
+    return await withTimeout(getAnimeRecommendationsAniList(id));
+  } catch {
+    return getKitsuRecommendations();
+  }
 }
 
 export { fetchAniList };
@@ -223,7 +240,7 @@ query ($search: String) {
   }
 }`;
 
-export async function searchAnimeByTitle(title: string): Promise<Anime | null> {
+async function searchAnimeByTitleAniList(title: string): Promise<Anime | null> {
   try {
     let clean = title.replace(/[\(\[].*?[\)\]]/g, '').replace(/\s+/g, ' ').trim();
     if (!clean) return null;
@@ -248,6 +265,11 @@ export async function searchAnimeByTitle(title: string): Promise<Anime | null> {
   } catch {
     return null;
   }
+}
+
+export async function searchAnimeByTitle(title: string): Promise<Anime | null> {
+  const anime = await searchAnimeByTitleAniList(title);
+  return anime ?? searchKitsuAnimeByTitle(title);
 }
 
 const ANILIST_USER_LIST_QUERY = `

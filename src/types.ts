@@ -25,6 +25,26 @@ export interface Anime {
   aired?: { from?: string; to?: string };
 }
 
+export interface Pagination {
+  last_visible_page: number;
+  has_next_page: boolean;
+}
+
+export interface SearchResponse {
+  data: Anime[];
+  pagination: Pagination;
+}
+
+export interface Recommendation {
+  entry: Anime;
+  url: string;
+  votes: number;
+}
+
+export interface RecommendationsResponse {
+  data: Recommendation[];
+}
+
 export type WatchStatus = 'watching' | 'completed' | 'plan_to_watch' | 'dropped';
 
 export interface UserAnime {

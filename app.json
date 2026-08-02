@@ -27,7 +27,12 @@
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "AniVault",
+      "shortName": "AniVault",
+      "description": "Track, discover, and stream your favorite anime.",
+      "themeColor": "#10b981",
+      "backgroundColor": "#f4faf7"
     },
     "plugins": [
       "expo-router",

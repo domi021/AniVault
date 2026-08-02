@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useColors } from '@/src/hooks/useColors';
 import { checkForUpdate, getUpdateUrl, UpdateInfo } from '@/src/lib/update';
 
@@ -14,7 +14,8 @@ export default function ForceUpdate() {
   }, []);
 
   const handleUpdate = () => {
-    Linking.openURL(update?.apkUrl || getUpdateUrl());
+    const url = Platform.OS === 'web' ? getUpdateUrl() : update?.apkUrl || getUpdateUrl();
+    Linking.openURL(url);
   };
 
   return (
