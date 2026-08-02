@@ -1,7 +1,7 @@
 {
   "name": "anivault",
   "productName": "AniVault",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Track, discover, and stream your favorite anime.",
   "main": "main.js",
   "license": "MIT",
