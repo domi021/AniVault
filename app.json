@@ -2,7 +2,7 @@
   "expo": {
     "name": "anivault",
     "slug": "anime-tracker",
-    "version": "1.4.3",
+    "version": "1.4.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "anivault",
@@ -16,7 +16,7 @@
     },
     "android": {
       "package": "com.animetracker.app",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
