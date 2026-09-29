@@ -1,78 +1,13 @@
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { createElement, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useColors } from '@/src/hooks/useColors';
 import { WebView } from 'react-native-webview';
 import { getAdBlockJS, getPlayerJS, shouldBlockAdUrl, extractIframeSrc } from '@/src/api/webviewInject';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
 
-declare global {
-  interface Window {
-    anivault?: {
-      isElectron?: boolean;
-      setPlayerReferer?: (referer: string) => void;
-    };
-  }
-}
-
 const DIRECT_DOMAINS = ['megaplay.buzz', 'goload.pro', 'embtaku.pro'];
 const MAX_AUTO_RETRIES = 2;
-
-const isElectron =
-  Platform.OS === 'web' && typeof window !== 'undefined' && !!window.anivault?.isElectron;
-
-function ElectronWebView({
-  src,
-  onLoaded,
-  onError,
-  onCrashed,
-}: {
-  src: string;
-  onLoaded?: () => void;
-  onError?: () => void;
-  onCrashed?: () => void;
-}) {
-  const ref = useRef<{ executeJavaScript?: (js: string) => Promise<unknown> } | null>(null);
-  const onLoadedRef = useRef(onLoaded);
-  onLoadedRef.current = onLoaded;
-  const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
-  const onCrashedRef = useRef(onCrashed);
-  onCrashedRef.current = onCrashed;
-
-  useEffect(() => {
-    const el = ref.current as any;
-    if (!el) return;
-
-    const handleDomReady = () => {
-      onLoadedRef.current?.();
-      try {
-        el.executeJavaScript(getAdBlockJS() + '\n' + getPlayerJS()).catch(() => {});
-      } catch {}
-    };
-    const handleLoad = () => onLoadedRef.current?.();
-    const handleFail = () => onErrorRef.current?.();
-    const handleCrashed = () => onCrashedRef.current?.();
-
-    el.addEventListener('dom-ready', handleDomReady);
-    el.addEventListener('did-finish-load', handleLoad);
-    el.addEventListener('did-fail-load', handleFail);
-    el.addEventListener('crashed', handleCrashed);
-    return () => {
-      el.removeEventListener('dom-ready', handleDomReady);
-      el.removeEventListener('did-finish-load', handleLoad);
-      el.removeEventListener('did-fail-load', handleFail);
-      el.removeEventListener('crashed', handleCrashed);
-    };
-  }, []);
-
-  return createElement('webview', {
-    ref,
-    src,
-    partition: 'anivault-player',
-    style: styles.electronWebview,
-  });
-}
 
 export default function EpisodePlayerScreen() {
   const { episodeId, url, urls } = useLocalSearchParams<{ episodeId: string; url: string; urls: string }>();
@@ -167,12 +102,6 @@ export default function EpisodePlayerScreen() {
     tryUrl(rawUrl!).then(() => setRetrying(false));
   };
 
-  useEffect(() => {
-    if (isElectron && referer) {
-      window.anivault?.setPlayerReferer?.(referer);
-    }
-  }, [referer]);
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen
@@ -214,24 +143,14 @@ export default function EpisodePlayerScreen() {
       ) : (
         <View style={styles.videoContainer}>
           {Platform.OS === 'web' ? (
-            isElectron ? (
-              <ElectronWebView
-                key={playerUrl}
-                src={playerUrl}
-                onLoaded={() => clearTimeout(loadTimer.current)}
-                onError={handleError}
-                onCrashed={handleError}
-              />
-            ) : (
-              <iframe
-                key={playerUrl}
-                src={playerUrl}
-                style={styles.videoIframe}
-                allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                allowFullScreen
-                onLoad={() => clearTimeout(loadTimer.current)}
-              />
-            )
+            <iframe
+              key={playerUrl}
+              src={playerUrl}
+              style={styles.videoIframe}
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              allowFullScreen
+              onLoad={() => clearTimeout(loadTimer.current)}
+            />
           ) : (
             <WebView
               ref={webViewRef}
@@ -303,7 +222,6 @@ const styles = StyleSheet.create({
   videoContainer: { flex: 1, justifyContent: 'center' },
   video: { width: '100%', height: 300 },
   videoIframe: { flex: 1, width: '100%', height: '100%', borderWidth: 0 },
-  electronWebview: { flex: 1, width: '100%', height: '100%' },
   loadingContainer: {
     position: 'absolute',
     top: 0,

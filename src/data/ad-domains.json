@@ -1,5 +1,5 @@
 {
-  "_comment": "Single source of truth for ad blocking. Loaded by electron/main.js (fs) and src/api/webviewInject.ts (import). Keep both consumers reading this file so the lists cannot drift.",
+  "_comment": "Single source of truth for ad blocking. Loaded by src/api/webviewInject.ts (import). Keep consumers reading this file so the lists cannot drift.",
   "adDomains": [
     "doubleclick.net",
     "googlesyndication.com",

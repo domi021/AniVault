@@ -1,7 +1,7 @@
-import adList from '../../electron/ad-domains.json';
+import adList from '../data/ad-domains.json';
 
-// Single source of truth, shared with electron/main.js. See the file for why
-// the two consumers must not keep separate copies.
+// Single source of truth for the ad filters. See the file for why consumers
+// must not keep separate copies.
 const AD_DOMAINS: string[] = adList.adDomains;
 const PLAYER_ALLOW_HOSTS: string[] = adList.playerAllowHosts;
 const AD_URL_HINTS: string[] = adList.adUrlHints;
