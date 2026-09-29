@@ -2,7 +2,7 @@
   "expo": {
     "name": "anivault",
     "slug": "anime-tracker",
-    "version": "1.4.4",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "anivault",
@@ -44,7 +44,10 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-video"
+      "expo-video",
+      "expo-font",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

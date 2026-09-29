@@ -1,10 +1,11 @@
 import { Text } from 'react-native';
+import type { ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useColors } from '@/src/hooks/useColors';
 import { useTranslation } from '@/src/hooks/useTranslation';
 
-function TabIcon({ color }: { color: string }) {
+function TabIcon({ color }: { color: ColorValue }) {
   return <Text style={{ fontSize: 18, fontWeight: '900', color, transform: [{ scaleX: 1.6 }] }}>{'\u039B'}</Text>;
 }
 

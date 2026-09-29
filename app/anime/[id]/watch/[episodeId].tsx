@@ -247,9 +247,38 @@ export default function EpisodePlayerScreen() {
               allowsInlineMediaPlayback
               mediaPlaybackRequiresUserAction={false}
               startInLoadingState
+              // Popups are the main ad vector here and the player never needs
+              // a new window (fullscreen uses allowsFullscreenVideo). Without
+              // this, react-native-webview defaults
+              // setSupportMultipleWindows to true, and RNCWebChromeClient
+              // hands every window.open() call a fresh WebView that has none
+              // of the adblock injection.
+              setSupportMultipleWindows={false}
+              onOpenWindow={() => ({ action: 'deny' })}
               injectedJavaScriptBeforeContentLoaded={getAdBlockJS()}
               injectedJavaScript={getPlayerJS()}
-              onShouldStartLoadWithRequest={(request) => !shouldBlockAdUrl(request.url)}
+              onShouldStartLoadWithRequest={(request) => {
+                const navUrl = request.url || '';
+                // The player must never navigate away from itself. A tap on a
+                // clickunder navigates this WebView in place, which is what an
+                // "ad popping up inside the video player" looks like on
+                // Android, so anything off the player origin is refused and
+                // logged rather than loaded.
+                const base = playerUrl ? playerUrl.split('?')[0] : '';
+                const isPlayerNav =
+                  !!base && (navUrl === base || navUrl.startsWith(base) || navUrl.startsWith(base + '?'));
+                if (!isPlayerNav && /^https?:/i.test(navUrl)) {
+                  console.log('[anivault-nav] blocked load -> ' + navUrl.slice(0, 120));
+                  return false;
+                }
+                return !shouldBlockAdUrl(navUrl);
+              }}
+              onMessage={(e) => {
+                const data = e?.nativeEvent?.data;
+                if (typeof data === 'string' && data.startsWith('[anivault-ad]')) {
+                  console.log(data);
+                }
+              }}
               onLoadEnd={() => clearTimeout(loadTimer.current)}
               onError={handleError}
               renderLoading={() => (

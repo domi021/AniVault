@@ -12,6 +12,10 @@ expo-env.d.ts
 # Electron desktop build
 release/
 build/
+# Widevine-patched Electron runtime (311M, fetched by scripts/fetch-electron-wvcus.sh)
+electron-dist-wvcus/
+# Google Widevine CDM binaries (21M, proprietary - do not redistribute in repo)
+resources/widevine/
 
 # Native
 .kotlin/

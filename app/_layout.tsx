@@ -68,23 +68,26 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="login" options={{ headerShown: false }} />
-        {authed && (
-          <>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="anime/[id]"
-              options={{ headerShown: Platform.OS === 'web' ? false : true }}
-            />
-            <Stack.Screen
-              name="anime/[id]/watch"
-              options={{ headerShown: Platform.OS === 'web' ? false : true }}
-            />
-            <Stack.Screen
-              name="anime/[id]/watch/[episodeId]"
-              options={{ headerShown: Platform.OS === 'web' ? false : true }}
-            />
-          </>
-        )}
+        {authed
+          ? [
+              <Stack.Screen key="tabs" name="(tabs)" options={{ headerShown: false }} />,
+              <Stack.Screen
+                key="anime-id"
+                name="anime/[id]"
+                options={{ headerShown: Platform.OS === 'web' ? false : true }}
+              />,
+              <Stack.Screen
+                key="anime-id-watch"
+                name="anime/[id]/watch"
+                options={{ headerShown: Platform.OS === 'web' ? false : true }}
+              />,
+              <Stack.Screen
+                key="anime-id-watch-episode"
+                name="anime/[id]/watch/[episodeId]"
+                options={{ headerShown: Platform.OS === 'web' ? false : true }}
+              />,
+            ]
+          : null}
       </Stack>
       <ForceUpdate />
       <Toast />
